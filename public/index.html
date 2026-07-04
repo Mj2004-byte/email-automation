@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutreachFlow // AI Lead Generation & Email Automation</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Decorative Glowing Orbs -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i data-lucide="zap"></i>
+        </div>
+        <span class="logo-text">Outreach<span>Flow</span></span>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-btn active" data-tab="dashboard-tab">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-tab="finder-tab">
+          <i data-lucide="search-code"></i>
+          <span>Lead Finder</span>
+        </button>
+        <button class="nav-btn" data-tab="leads-tab">
+          <i data-lucide="users"></i>
+          <span>Manage Leads</span>
+        </button>
+      </nav>
+
+      <div class="theme-toggle-container">
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Mode">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+          <span>Toggle Theme</span>
+        </button>
+      </div>
+
+      <div class="db-status-badge">
+        <span class="status-dot green"></span>
+        <span class="status-text" id="storage-mode">Connecting...</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <div class="header-title">
+          <h1 id="page-title">Dashboard Overview</h1>
+          <p id="page-subtitle" class="subtitle">Track metrics, check scores, and export your email campaigns.</p>
+        </div>
+        <div class="action-buttons-group">
+          <button id="clear-db-btn" class="btn btn-secondary border-red">
+            <i data-lucide="trash-2"></i>
+            <span>Clear Leads</span>
+          </button>
+          <a href="/api/export-csv" class="btn btn-primary">
+            <i data-lucide="download"></i>
+            <span>Export CSV</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- TAB: Dashboard -->
+      <section id="dashboard-tab" class="tab-content active">
+        <!-- Stats Summary Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <i data-lucide="users-2"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Total Leads</span>
+              <h3 class="stat-value" id="stat-total-leads">0</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i data-lucide="sparkles"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">AI Enriched</span>
+              <h3 class="stat-value" id="stat-enriched-leads">0</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon emerald">
+              <i data-lucide="line-chart"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Average Score</span>
+              <h3 class="stat-value" id="stat-avg-score">0%</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <i data-lucide="send"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Outreach Sent</span>
+              <h3 class="stat-value" id="stat-sent-emails">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts panel -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <h4>Campaign Funnel Status</h4>
+            <div class="chart-wrapper">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h4>AI Score Distribution</h4>
+            <div class="chart-wrapper">
+              <canvas id="scoreChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Leads Overview -->
+        <div class="recent-leads-section">
+          <div class="section-header">
+            <h3>Recent High-Quality Leads</h3>
+            <button class="text-link" id="view-all-leads-link">View All Leads</button>
+          </div>
+          <div class="recent-leads-grid" id="recent-leads-container">
+            <div class="empty-state">
+              <i data-lucide="inbox"></i>
+              <p>No leads found. Go to the <strong>Lead Finder</strong> tab to search for prospects.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Lead Finder -->
+      <section id="finder-tab" class="tab-content">
+        <div class="finder-layout">
+          <!-- Search Form Card -->
+          <div class="finder-form-card">
+            <h2>Find New Business Leads</h2>
+            <p class="subtitle">Specify the niche/industry and location to search the web for prospects.</p>
+            
+            <form id="finder-form" class="search-form">
+              <div class="input-group">
+                <label for="search-niche">Niche / Industry</label>
+                <div class="input-wrapper">
+                  <i data-lucide="briefcase" class="input-icon"></i>
+                  <input type="text" id="search-niche" placeholder="e.g. Dentists, Software agencies, Plumbers" required>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="search-location">City & Country</label>
+                <div class="input-wrapper">
+                  <i data-lucide="map-pin" class="input-icon"></i>
+                  <input type="text" id="search-location" placeholder="e.g. New York, London, Miami" required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-large" id="search-submit-btn">
+                <i data-lucide="search"></i>
+                <span>Discover Leads</span>
+              </button>
+            </form>
+
+            <!-- Loading tracker log -->
+            <div id="search-tracker" class="tracker-container hidden">
+              <div class="tracker-spinner"></div>
+              <h4 id="tracker-status-title">Searching DuckDuckGo...</h4>
+              <p id="tracker-status-desc">Fetching matches and saving results to database.</p>
+              <div class="tracker-progress-bar">
+                <div class="tracker-progress-inner" id="tracker-progress"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info Guide -->
+          <div class="finder-guide-card">
+            <h3>Lead Pipeline Automation</h3>
+            <div class="guide-steps">
+              <div class="guide-step">
+                <div class="step-num">1</div>
+                <div>
+                  <h5>Web & Maps Discovery</h5>
+                  <p>Our backend queries search directories for targeted local businesses matching your exact industry request.</p>
+                </div>
+              </div>
+              <div class="guide-step">
+                <div class="step-num">2</div>
+                <div>
+                  <h5>Deep Web Crawling</h5>
+                  <p>The site scraper crawls their homepage and contact portals to extract direct emails, phone numbers, and social URLs.</p>
+                </div>
+              </div>
+              <div class="guide-step">
+                <div class="step-num">3</div>
+                <div>
+                  <h5>Groq AI Llama 3.3 Evaluation</h5>
+                  <p>Our custom sales agent analyzes their presence, assigns a suitability score, and writes a personalized pitch.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Manage Leads -->
+      <section id="leads-tab" class="tab-content">
+        <!-- Filters panel -->
+        <div class="leads-filters-bar">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="leads-search-input" placeholder="Search by name, website, location...">
+          </div>
+          <div class="filter-actions">
+            <select id="filter-score-select">
+              <option value="all">All Scores</option>
+              <option value="high">High Match (80-100)</option>
+              <option value="mid">Medium Match (50-79)</option>
+              <option value="low">Low Match (< 50)</option>
+            </select>
+            <select id="filter-status-select">
+              <option value="all">All Statuses</option>
+              <option value="Found">Discovered Only</option>
+              <option value="Enriched">Enriched / Scored</option>
+              <option value="Sent">Outreach Sent</option>
+              <option value="Processing">Processing</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Leads List/Grid Container -->
+        <div class="leads-display-area" id="leads-list-container">
+          <div class="empty-state">
+            <i data-lucide="users"></i>
+            <p>No leads found. Make your first query in the <strong>Lead Finder</strong> tab.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- EMAIL MODAL WINDOW -->
+  <div class="modal-overlay hidden" id="email-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon">
+            <i data-lucide="mail"></i>
+          </div>
+          <div>
+            <h3>Outreach Email Assistant</h3>
+            <p class="subtitle" id="modal-lead-name">Company Name</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="modal-close-x">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="ai-rationale-box">
+          <span class="tag purple-tag">AI Evaluation Insight</span>
+          <p id="modal-lead-rationale">Loading scoring rationales...</p>
+          <div class="value-prop-note">
+            <strong>Value Prop:</strong> <span id="modal-lead-valueprop"></span>
+          </div>
+        </div>
+
+        <div class="email-editor-form">
+          <div class="input-group">
+            <label for="email-subject-input">Subject Line</label>
+            <input type="text" id="email-subject-input" required placeholder="Subject Line...">
+          </div>
+
+          <div class="input-group">
+            <label for="email-body-textarea">Email Body</label>
+            <textarea id="email-body-textarea" rows="12" required placeholder="Type or edit email body..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-close-btn">Close</button>
+        <div class="footer-actions">
+          <button class="btn btn-primary border-blue" id="save-draft-btn">
+            <i data-lucide="save"></i>
+            <span>Save Draft</span>
+          </button>
+          <button class="btn btn-glow-indigo" id="send-outreach-btn">
+            <i data-lucide="send"></i>
+            <span>Send Email</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Initialization -->
+  <script src="js/app.js"></script>
+</body>
+</html>
